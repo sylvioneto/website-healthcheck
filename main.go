@@ -23,14 +23,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer logFile.Close()  // defers the execution until surroundings complete
+	defer logFile.Close()
 	log.SetOutput(logFile) // comment this line to see logs in the console
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile | log.Lmsgprefix)
 
+	// menu handling
 	printMenu()
 	userInput := getUserInput()
-
-	// menu handling
 	switch userInput {
 	case 1:
 		startMonitoring()
@@ -47,7 +46,6 @@ func main() {
 
 // print menu
 func printMenu() {
-	//implicit var declaration
 	appVersion := 0.1
 	fmt.Println("Website monitoring tool")
 	fmt.Println("Version:", appVersion)
@@ -56,7 +54,7 @@ func printMenu() {
 	fmt.Println("0 - exit")
 }
 
-// set user input into a variable and return
+// request user input
 func getUserInput() int {
 	var userInput int
 	fmt.Scan(&userInput)
@@ -64,20 +62,20 @@ func getUserInput() int {
 	return userInput
 }
 
-// start the monitoring loop
+// start health check monitor
 func startMonitoring() {
 	log.Println("Monitoring...")
 	urlList := readConfigFile()
 	for {
 		for _, url := range urlList {
-			testURL(url)
+			checkURL(url)
 		}
 		time.Sleep(interval * time.Second)
 	}
 }
 
 // access the url and log the status code
-func testURL(url string) {
+func checkURL(url string) {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println(url, err)
@@ -90,13 +88,11 @@ func testURL(url string) {
 func readConfigFile() []string {
 	log.Println("Reading config.txt file...")
 
-	// open file
 	configFile, err := os.Open(configFilePath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	//read file
 	var urlList []string
 	reader := bufio.NewReader(configFile)
 	for {
