@@ -14,7 +14,7 @@ import (
 
 const interval = 5
 const configFilePath = "config.txt"
-const logFilePath = "website-monitor.log"
+const logFilePath = "website-healthcheck.log"
 
 func main() {
 
