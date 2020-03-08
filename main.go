@@ -12,6 +12,7 @@ import (
 
 const configFilePath = "config.yaml"
 const logFilePath = "website-healthcheck.log"
+const logPrefix = "website-healthcheck: "
 
 var config Config
 
@@ -38,7 +39,7 @@ func main() {
 	}
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile | log.Lmsgprefix)
-	log.SetPrefix("website-healthcheck: ")
+	log.SetPrefix(logPrefix)
 
 	startMonitoring()
 }
