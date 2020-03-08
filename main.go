@@ -1,31 +1,44 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
+
+	"gopkg.in/yaml.v2"
 )
 
-const interval = 5
-const configFilePath = "config.txt"
+const configFilePath = "config.yaml"
 const logFilePath = "website-healthcheck.log"
+
+var config Config
+
+// Config is the map used to unmarshall the config.yaml file
+type Config struct {
+	Interval   int      `yaml:"interval"`
+	Websites   []string `yaml:",flow"`
+	LogConsole bool     `yaml:"logConsole"`
+}
 
 func main() {
 
-	// log setup
-	logFile, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
-	if err != nil {
-		log.Fatal(err)
+	readConfigFile()
+
+	// set log file in case logConsole is set as false
+	if !config.LogConsole {
+		logFile, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer logFile.Close()
+		log.SetOutput(logFile)
 	}
-	defer logFile.Close()
-	log.SetOutput(logFile) // comment this line to see logs in the console
+
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile | log.Lmsgprefix)
+	log.SetPrefix("website-healthcheck: ")
 
 	// menu handling
 	printMenu()
@@ -65,12 +78,11 @@ func getUserInput() int {
 // start health check monitor
 func startMonitoring() {
 	log.Println("Monitoring...")
-	urlList := readConfigFile()
 	for {
-		for _, url := range urlList {
+		for _, url := range config.Websites {
 			checkURL(url)
 		}
-		time.Sleep(interval * time.Second)
+		time.Sleep(time.Duration(config.Interval) * time.Second)
 	}
 }
 
@@ -85,26 +97,17 @@ func checkURL(url string) {
 }
 
 // read file with the list of sites
-func readConfigFile() []string {
-	log.Println("Reading config.txt file...")
-
-	configFile, err := os.Open(configFilePath)
+func readConfigFile() {
+	log.Println("Reading config file...")
+	configFile, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	var urlList []string
-	reader := bufio.NewReader(configFile)
-	for {
-		line, err := reader.ReadString('\n')
-		if err == io.EOF {
-			break
-		}
-		line = strings.TrimSpace(line)
-		urlList = append(urlList, line)
-	}
-	configFile.Close()
-	return urlList
+	// unmarshall yaml
+	config = Config{}
+	yaml.Unmarshal(configFile, &config)
+	log.Println("Config:", config)
 }
 
 // print log file
