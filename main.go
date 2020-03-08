@@ -18,7 +18,7 @@ var config Config
 // Config is the map used to unmarshall the config.yaml file
 type Config struct {
 	Interval   int      `yaml:"interval"`
-	Websites   []string `yaml:",flow"`
+	Websites   []string `yaml:"websites"`
 	LogConsole bool     `yaml:"logConsole"`
 }
 
