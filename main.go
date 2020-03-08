@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -34,45 +33,14 @@ func main() {
 			log.Fatal(err)
 		}
 		defer logFile.Close()
+		log.Println("Running... Log output ->", logFilePath)
 		log.SetOutput(logFile)
 	}
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile | log.Lmsgprefix)
 	log.SetPrefix("website-healthcheck: ")
 
-	// menu handling
-	printMenu()
-	userInput := getUserInput()
-	switch userInput {
-	case 1:
-		startMonitoring()
-	case 2:
-		printLog()
-	case 0:
-		log.Println("Exit...")
-		os.Exit(0)
-	default:
-		log.Fatalln("Not valid option")
-		os.Exit(1)
-	}
-}
-
-// print menu
-func printMenu() {
-	appVersion := 0.1
-	fmt.Println("Website monitoring tool")
-	fmt.Println("Version:", appVersion)
-	fmt.Println("1 - start monitor")
-	fmt.Println("2 - view logs")
-	fmt.Println("0 - exit")
-}
-
-// request user input
-func getUserInput() int {
-	var userInput int
-	fmt.Scan(&userInput)
-	fmt.Println("Selected command:", userInput)
-	return userInput
+	startMonitoring()
 }
 
 // start health check monitor
@@ -108,14 +76,4 @@ func readConfigFile() {
 	config = Config{}
 	yaml.Unmarshal(configFile, &config)
 	log.Println("Config:", config)
-}
-
-// print log file
-func printLog() {
-	log.Println("Viewing logs...")
-	logFile, err := ioutil.ReadFile(logFilePath)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Println(string(logFile))
 }

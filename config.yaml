@@ -1,4 +1,4 @@
-logConsole: false
+logConsole: true
 interval: 5
 websites:
    [
